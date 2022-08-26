@@ -35,7 +35,8 @@ async function insertDiscordMessages(db, messages) {
             editedTimestamp = epochTimestamp(message.edited_timestamp)
         }
 
-        db.prepare(`INSERT OR REPLACE INTO messages (id, type, content, channel_id, timestamp, edited_timestamp, referenced_message_id) VALUES (?, ?, ?, ?, ?, ?, ?)`)
+        db.prepare(`UPDATE messages SET content=?, edited_timestamp=? WHERE id=?`).run(message.content, message.edited_timestamp, message.id)
+        db.prepare(`INSERT or IGNORE INTO messages (id, type, content, channel_id, timestamp, edited_timestamp, referenced_message_id) VALUES (?, ?, ?, ?, ?, ?, ?)`)
         .run(message.id, message.type, message.content, message.channel_id, epochTimestamp(message.timestamp), editedTimestamp, referencedMessageId)
     }
 
@@ -43,7 +44,8 @@ async function insertDiscordMessages(db, messages) {
         for (const message of messages) {
             insertMessage(message)
             if (message.message_reference && message.referenced_message) {
-                insertMessage(message.referenced_message, message.message_reference.message_id)
+                insertMessage(message.referenced_message)
+                db.prepare("UPDATE messages SET referenced_message_id=? WHERE id=?").run(message.message_reference.message_id, message.id)
             }
         }
     })
