@@ -15,8 +15,9 @@ if (process.env.NODE_ENV == "DEBUG") {
 		const downloads = msgs.reduce((filtered, message) => {
 			if (message.attachments.length > 0)
 				filtered.push(...message.attachments.map(attachment => discord.saveMessageAttachment(attachment.proxy_url)))
+			if (message.embeds.length > 0)
+				filtered.push(...message.embeds.map(embed => discord.saveMessageAttachment(embed.thumbnail.proxy_url)))
 			return filtered
-			
 		}, [])
 		await Promise.all(downloads)
 	})
