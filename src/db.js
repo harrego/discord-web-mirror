@@ -34,8 +34,22 @@ function setup(db) {
 		title TEXT,
 		description TEXT,
 		color INT,
+		
+		author_name TEXT,
+		author_url TEXT,
+		author_icon_url TEXT,
+		author_proxy_icon_url TEXT,
+		
+		image_url TEXT,
+		image_proxy_url TEXT,
+		
 		thumbnail_url TEXT,
 		thumbnail_proxy_url TEXT,
+		
+		footer_text TEXT,
+		footer_icon_url TEXT,
+		footer_proxy_icon_url TEXT,
+		
 		FOREIGN KEY(message_id) REFERENCES messages(id)
 	)`).run()
 }
@@ -53,15 +67,29 @@ async function insertDiscordMessages(db, messages) {
             editedTimestamp = epochTimestamp(message.edited_timestamp)
         }
 
-        db.prepare(`UPDATE messages SET content=?, edited_timestamp=? WHERE id=?`).run(message.content, message.edited_timestamp, message.id)
+		const containsAttachments = message.attachments.length > 0 ? 1 : 0
+		const containsEmbeds = message.embeds.length > 0 ? 1 : 0
+
+        db.prepare(`UPDATE messages SET content=?, edited_timestamp=?, contains_attachments=?, contains_embeds=? WHERE id=?`).run(message.content, editedTimestamp, containsAttachments, containsEmbeds, message.id)
         db.prepare(`INSERT or IGNORE INTO messages (id, type, content, channel_id, timestamp, edited_timestamp, referenced_message_id, contains_attachments, contains_embeds) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-        .run(message.id, message.type, message.content, message.channel_id, epochTimestamp(message.timestamp), editedTimestamp, referencedMessageId, message.attachments.length > 0 ? 1 : 0, message.embeds.length > 0 ? 1 : 0)
+        .run(message.id, message.type, message.content, message.channel_id, epochTimestamp(message.timestamp), editedTimestamp, referencedMessageId, containsAttachments, containsEmbeds)
         
         for (const embedIndex in message.embeds) {
         	const embed = message.embeds[embedIndex]
+        	
         	const hash = crypto.createHash("md5").update(`${message.id}${embedIndex}`).digest("hex")
-        	db.prepare(`INSERT or IGNORE INTO message_embeds (hash, message_id, sort_index, type, url, title, description, color, thumbnail_url, thumbnail_proxy_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-        	.run(hash, message.id, embedIndex, embed.type, embed.url, embed.title, embed.description, embed.color, embed.thumbnail.url, embed.thumbnail.proxy_url)
+        	db.prepare(`INSERT or IGNORE INTO message_embeds (
+        		hash, message_id, sort_index, type, url, title, description, color,
+        		author_name, author_url, author_icon_url, author_proxy_icon_url,
+        		image_url, image_proxy_url,
+        		thumbnail_url, thumbnail_proxy_url,
+        		footer_text, footer_icon_url, footer_proxy_icon_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+        	.run(
+        		hash, message.id, embedIndex, embed.type, embed.url, embed.title, embed.description, embed.color,
+        		embed.author?.name, embed.author?.url, embed.author?.icon_url, embed.author?.proxy_icon_url,
+        		embed.image?.url, embed.image?.proxy_url,
+        		embed.thumbnail?.url, embed.thumbnail?.proxy_url,
+        		embed.footer?.text, embed.footer?.icon_url, embed.footer?.proxy_icon_url)
         }
         
         for (const attachment of message.attachments) {

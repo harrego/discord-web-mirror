@@ -16,7 +16,14 @@ if (process.env.NODE_ENV == "DEBUG") {
 			if (message.attachments.length > 0)
 				filtered.push(...message.attachments.map(attachment => discord.saveMessageAttachment(attachment.proxy_url)))
 			if (message.embeds.length > 0)
-				filtered.push(...message.embeds.map(embed => discord.saveMessageAttachment(embed.thumbnail.proxy_url)))
+				filtered.push(...message.embeds.map(embed => {
+				if (embed.author?.proxy_icon_url)
+					discord.saveMessageAttachment(embed.author.proxy_icon_url)
+				if (embed.image?.proxy_url)
+					discord.saveMessageAttachment(embed.image.proxy_url)
+				if (embed.thumbnail?.proxy_url)
+					discord.saveMessageAttachment(embed.thumbnail.proxy_url)
+			}))
 			return filtered
 		}, [])
 		await Promise.all(downloads)
