@@ -131,8 +131,16 @@ function trimNullValues(obj) {
 	}
 }
 
-function getDiscordMessages(db, channelId) {
-	const rows = db.prepare("SELECT * FROM messages WHERE channel_id = ? LIMIT 50").all(channelId)
+function getDiscordMessages(db, channelId, count = 50, afterMessageId = undefined) {
+	const messageCount = Math.min(Math.max(count, 0), 50)
+	
+	let rows = []
+	if (afterMessageId) {
+		rows = db.prepare("SELECT * FROM messages WHERE channel_id = ? AND id < ? ORDER BY id DESC LIMIT ?").all(channelId, afterMessageId, messageCount)
+	} else {
+		rows = db.prepare("SELECT * FROM messages WHERE channel_id = ? ORDER BY id DESC LIMIT ?").all(channelId, messageCount)
+	}
+	
 	for (row of rows) {
 		// pull in attachments
 		if (row.contains_attachments) {
@@ -146,8 +154,7 @@ function getDiscordMessages(db, channelId) {
 		
 		// pull in embeds
 		if (row.contains_embeds) {
-			const embedRows = db.prepare("SELECT * FROM message_embeds WHERE message_id = ?").all(row.id)
-			embedRows.sort((a, b) => { return a.sort_index - b.sort_index })
+			const embedRows = db.prepare("SELECT * FROM message_embeds WHERE message_id = ? ORDER BY sort_index ASC").all(row.id)
 			for (const embed of embedRows) {
 				embed.author = collectPrefixedKeys(embed, "author_")
 				embed.image = collectPrefixedKeys(embed, "image_")
