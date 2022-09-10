@@ -55,7 +55,7 @@ function setup(db) {
 }
 exports.setup = setup
 
-async function insertDiscordMessages(db, messages) {
+function insertDiscordMessages(db, messages) {
     function epochTimestamp(dateString) {
         const date = new Date(dateString)
         return Math.floor(date.getTime() / 1000)
@@ -110,3 +110,64 @@ async function insertDiscordMessages(db, messages) {
     insertManyMessages(messages)
 }
 exports.insertDiscordMessages = insertDiscordMessages
+
+function collectPrefixedKeys(obj, prefix) {
+	var newObj = {}
+	for (const key in obj) {
+		if (key.startsWith(prefix)) {
+			const newKey = key.slice(prefix.length)
+			if (obj[key])
+				newObj[newKey] = obj[key]
+			delete obj[key]
+		}
+	}
+	return Object.keys(newObj).length <= 0 ? null : newObj
+}
+function trimNullValues(obj) {
+	for (const key in obj) {
+		if (obj[key] == null) {
+			delete obj[key]
+		}
+	}
+}
+
+function getDiscordMessages(db, channelId) {
+	const rows = db.prepare("SELECT * FROM messages WHERE channel_id = ? LIMIT 50").all(channelId)
+	for (row of rows) {
+		// pull in attachments
+		if (row.contains_attachments) {
+			const attachmentRows = db.prepare("SELECT * FROM message_attachments WHERE message_id = ?").all(row.id)
+			for (const attachment of attachmentRows) {
+				trimNullValues(attachment)
+			}
+			row.attachments = attachmentRows
+		}
+		delete row.contains_attachments
+		
+		// pull in embeds
+		if (row.contains_embeds) {
+			const embedRows = db.prepare("SELECT * FROM message_embeds WHERE message_id = ?").all(row.id)
+			embedRows.sort((a, b) => { return a.sort_index - b.sort_index })
+			for (const embed of embedRows) {
+				embed.author = collectPrefixedKeys(embed, "author_")
+				embed.image = collectPrefixedKeys(embed, "image_")
+				embed.thumbnail = collectPrefixedKeys(embed, "thumbnail_")
+				embed.footer = collectPrefixedKeys(embed, "footer_")
+				
+				if (embed.color) {
+					const hexColor = embed.color
+					embed.color = "#" + hexColor.toString(16)
+				}
+				
+				trimNullValues(embed)
+				delete embed.sort_index
+			}
+			row.embeds = embedRows
+		}
+		delete row.contains_embeds
+		
+		trimNullValues(row)
+	}
+	return rows
+}
+exports.getDiscordMessages = getDiscordMessages

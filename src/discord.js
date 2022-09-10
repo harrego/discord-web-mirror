@@ -4,8 +4,10 @@ const path = require("path")
 const util = require("util")
 const stream = require("stream")
 const pipeline = util.promisify(stream.pipeline)
+const dbHelper = require("./db")
+const { DiscordError } = require("./error")
 
-async function getChannelMessages(channelId, token) {
+async function getChannelMessages(token, channelId) {
     const response = await axios(`https://discord.com/api/v9/channels/${channelId}/messages?limit=50`, {
         headers: {
             "authorization": token,
@@ -39,3 +41,41 @@ async function saveMessageAttachment(rawUrl) {
 	await pipeline(response.data, fs.createWriteStream(fullPath))
 }
 exports.saveMessageAttachment = saveMessageAttachment
+
+async function archiveChannelMessages(db, discordToken, discordChannelId) {
+	let msgs
+	try {
+		msgs = await getChannelMessages(discordToken, discordChannelId)
+	} catch (err) {
+		// wrap discord api provided errors
+		
+		if (err instanceof axios.AxiosError && err.response?.status != 200) {
+			throw new DiscordError(err.response.data.message)	
+		} else {
+			throw err
+		}
+// 		throw err
+	}
+	
+	// save the msgs to the database
+	dbHelper.insertDiscordMessages(db, msgs)
+	
+	// download each attachment from each message
+	const downloads = msgs.reduce((filtered, message) => {
+		if (message.attachments.length > 0)
+			filtered.push(...message.attachments.map(attachment => saveMessageAttachment(attachment.proxy_url)))
+		if (message.embeds.length > 0) {
+				filtered.push(...message.embeds.map(embed => {
+				if (embed.author?.proxy_icon_url)
+					saveMessageAttachment(embed.author.proxy_icon_url)
+				if (embed.image?.proxy_url)
+					saveMessageAttachment(embed.image.proxy_url)
+				if (embed.thumbnail?.proxy_url)
+					saveMessageAttachment(embed.thumbnail.proxy_url)
+			}))
+		}
+		return filtered
+	}, [])
+	await Promise.all(downloads)
+}
+exports.archiveChannelMessages = archiveChannelMessages
