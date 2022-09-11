@@ -15,16 +15,23 @@ app.use("/static", express.static("static"))
 app.set("view engine", "ejs")
 app.set("db", db)
 
-// if (process.env.NODE_ENV == "DEBUG") {
+if (process.env.NODE_ENV == "DEBUG") {
+// 	discord.archiveChannelMessages(db, process.env.DISCORD_TOKEN, process.env.DISCORD_CHANNEL_ID)
+
+
+
 // 	var message = dbHelper.getDiscordMessages(db, process.env.DISCORD_CHANNEL_ID, 1)
 // 	while (message != null) {
 // 		const rows = dbHelper.getDiscordMessages(db, process.env.DISCORD_CHANNEL_ID, 1, message.id)
 // 		message = rows.length > 0 ? rows[0] : null
 // 		console.log(message)
 // 	}
-// }
 
-const port = process.env.PORT || 3000
-app.listen(port, () => {
-	console.log(`[discord-web-mirror] hosted on port ${port}`)
-})
+
+	console.log(JSON.stringify(dbHelper.getDiscordMessages(db, process.env.DISCORD_CHANNEL_ID, 1, "1017140450915786843")))
+}
+
+// const port = process.env.PORT || 3000
+// app.listen(port, () => {
+// 	console.log(`[discord-web-mirror] hosted on port ${port}`)
+// })

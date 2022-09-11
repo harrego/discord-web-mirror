@@ -155,9 +155,13 @@ function getDiscordMessages(db, channelId, count = 50, afterMessageId = undefine
 		// pull in embeds
 		if (row.contains_embeds) {
 			const embedRows = db.prepare("SELECT * FROM message_embeds WHERE message_id = ? ORDER BY sort_index ASC").all(row.id)
-			for (const embed of embedRows) {
+			var completeEmbeds = []
+			for (const embedIndex in embedRows) {
+				const embed = embedRows[embedIndex]
+			
 				embed.author = collectPrefixedKeys(embed, "author_")
-				embed.image = collectPrefixedKeys(embed, "image_")
+				const image = collectPrefixedKeys(embed, "image_")
+				embed.images = image != null ? [ image ] : []
 				embed.thumbnail = collectPrefixedKeys(embed, "thumbnail_")
 				embed.footer = collectPrefixedKeys(embed, "footer_")
 				
@@ -166,10 +170,17 @@ function getDiscordMessages(db, channelId, count = 50, afterMessageId = undefine
 					embed.color = "#" + hexColor.toString(16)
 				}
 				
+				if (embed.author || embed.thumbnail || embed.footer) {
+					completeEmbeds.push(embed)
+				} else if (image != null && completeEmbeds.length > 0) {
+					completeEmbeds.at(-1).images.push(image)
+					continue
+				}
+				
 				trimNullValues(embed)
 				delete embed.sort_index
 			}
-			row.embeds = embedRows
+			row.embeds = completeEmbeds
 		}
 		delete row.contains_embeds
 		
