@@ -1,10 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <link rel="stylesheet" type="text/css" href="static/css/style.css">
+  
+  <link rel="icon" type="image/png" href="assets/favicon-16x16.png" sizes="16x16">
+  <link rel="icon" type="image/png" href="assets/favicon-32x32.png" sizes="32x32">
+  <link rel="icon" type="image/png" href="assets/favicon-96x96.png" sizes="96x96">
+  <!--
+  <meta property="og:title" content="" />
+  <meta property="og:description" content="" />
+  <meta property="og:url" content="" />
+  <title>Discord Web Mirror</title>
+  -->
+</head>
 <body>
-	<ul>
-	<% for (const message of messages) { %>
-		<li><%= message.content %></li>
-	<% } %>
-	</ul>
+	<div class="content">
+		<div class="messages">
+			<div class="message">
+				<div class="message-header p-margin-0">
+					<p>September 10, 2022 - 2:24 EST</p>
+					<p>#ye-news</p>
+				</div>
+				<div class="message-content">
+					<p>message content</p>
+					<div class="embed">
+						<div class="embed-header p-margin-0">
+							<p>Instafix</p>
+						</div>
+						<div class="embed-author p-margin-0">
+							<img width="26" height="26" src="x.png"/>
+							<p><a href="#">example (@example)</a></p>
+						</div>
+						<div class="embed-title p-margin-0">
+							<p><a href="#">Example - @example</a></p>
+						</div>
+						<div class="embed-content">
+							<p>example paragraph</p>
+						</div>
+						<div class="embed-images">
+							<img width="190" height="190" src="x.png"/>
+							<img width="190" height="190" src="x.png"/>
+							<img width="190" height="190" src="x.png"/>
+							<img width="190" height="190" src="x.png"/>
+						</div>
+						<div class="embed-footer p-margin-0">
+							<img width="20" height="20" src="x.png"/>
+							<p>Twitter • 01/01/01</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </body>
 </html>

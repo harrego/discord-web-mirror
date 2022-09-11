@@ -28,10 +28,10 @@ if (process.env.NODE_ENV == "DEBUG") {
 // 	}
 
 
-	console.log(JSON.stringify(dbHelper.getDiscordMessages(db, process.env.DISCORD_CHANNEL_ID, 1, "1017140450915786843")))
+// 	console.log(JSON.stringify(dbHelper.getDiscordMessages(db, process.env.DISCORD_CHANNEL_ID, 1, "1017140450915786843")))
 }
 
-// const port = process.env.PORT || 3000
-// app.listen(port, () => {
-// 	console.log(`[discord-web-mirror] hosted on port ${port}`)
-// })
+const port = process.env.PORT || 3000
+app.listen(port, () => {
+	console.log(`[discord-web-mirror] hosted on port ${port}`)
+})
