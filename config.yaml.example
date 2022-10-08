@@ -1,0 +1,20 @@
+discord:
+  # discord private token extracted from the browser.
+  token: "DISCORD TOKEN"
+  # array of channels to archive and provide feeds for.
+  channels:
+    - "CHANNEL ID"
+  # approximate number of seconds to check the discord channels for new updates, this number will be
+  # randomized, give or take 120 seconds, to avoid potential scrapting detection. 600 seconds by default.
+  approx_interval: 600
+
+server:
+  # it is possible to run the app without a server component and just archive discord channels on interval,
+  # the data archived will still be able to mirror in future feeds
+  enabled: true
+  # port to run the web server, 3000 by default.
+  port: 3000
+  # base url that the web app is running at. required by the rss feeds.
+  url: "http://localhost:3000"
+  # log every incoming web request in stdout alongside app related logs.
+  log: true

@@ -31,7 +31,8 @@ async function saveMessageAttachment(rawUrl) {
 	const fullPath = path.join(dirPath, filename)
 	
 	if (fs.existsSync(fullPath)) {
-		log("discord dl", "info", `${rawUrl} already downloaded, skipping`)
+		// annoyingly verbose
+		// log("discord dl", "info", `${rawUrl} already downloaded, skipping`)
 		return
 	}
 	

@@ -29,7 +29,14 @@
 <% if (post.embeds) { %>
   <% for (const embed of post.embeds) { %>
     <hr/>
+    <% if (embed.url) { %>
+      <a href="<%= embed.url %>">
+    <% } %>
     <% if (embed.title) { %><h3><%= embed.title %></h3><% } %>
+    <% if (embed.url) { %>
+      </a>
+    <% } %>
+
     <% if (embed.author?.name) { %> <p><small><i><%= embed.author.name %></i></small></p> <% } %>
     <% if (embed.footer?.text) { %> <p><small><i><%= embed.footer.text %></i></small></p> <% } %>
     <% if (embed.html_description) { %><%- embed.html_description %><% } %>

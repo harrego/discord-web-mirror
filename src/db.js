@@ -170,7 +170,7 @@ function getDiscordMessages(db, channelId, count = 50, afterMessageId = undefine
 					embed.color = "#" + hexColor.toString(16)
 				}
 				
-				if (embed.author || embed.thumbnail || embed.footer) {
+				if (embed.author || embed.thumbnail || embed.footer || embed.title || embed.description) {
 					completeEmbeds.push(embed)
 				} else if (image != null && completeEmbeds.length > 0) {
 					completeEmbeds.at(-1).images.push(image)
