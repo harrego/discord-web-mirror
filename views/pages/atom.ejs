@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title>discord-web-mirror</title>
+  <link href="http://localhost:3000/"/>
+  <updated>2022-10-07T20:29:23Z</updated>
+  <author>
+    <name>discord-web-mirror</name>
+  </author>
+  <id>urn:uuid:aedfc73a-be65-4f79-bf0e-1e5aefb4788b</id>
+
+<% for (post of posts) { %>
+  <entry>
+    <title><%= post.content %></title>
+    
+    <id><%= post.id %></id>
+    <updated><%= post.iso_timestamp %></updated>
+    <content type="html"><![CDATA[
+<%- post.html_content %>
+
+<% if (post.attachments) {
+ for (attachment of post.attachments) { %>
+    <% if (attachment.content_type.startsWith("image/")) { %>
+      <img src="<%= attachment.proxy_url_local %>"/>
+    <% } %>
+<% } %>
+<% } %>
+
+<% if (post.embeds) { %>
+  <% for (const embed of post.embeds) { %>
+    <hr/>
+    <% if (embed.title) { %><h3><%= embed.title %></h3><% } %>
+    <% if (embed.author?.name) { %> <p><small><i><%= embed.author.name %></i></small></p> <% } %>
+    <% if (embed.footer?.text) { %> <p><small><i><%= embed.footer.text %></i></small></p> <% } %>
+    <% if (embed.html_description) { %><%- embed.html_description %><% } %>
+    <% if (embed.images) { %>
+      <% for (const embedImage of embed.images) { %>
+        <img src="<%= embedImage.proxy_url_local %>" />
+      <% } %>
+    <% } %>
+    <% if (embed.thumbnail) { %>
+      <img src="<%= embed.thumbnail.proxy_url_local %>" />
+    <% } %>
+  <% } %>
+<% } %>
+    ]]></content>
+  </entry>
+
+<% } %>
+
+</feed>

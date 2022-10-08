@@ -3,12 +3,18 @@ require("dotenv").config()
 const express = require("express")
 const app = express()
 
+const morgan = require("morgan")
+
 const dbHelper = require("./src/db")
 const discord = require("./src/discord")
+const { log } = require("./src/log")
 
 const db = require("better-sqlite3")("discord-web-mirror.sqlite3")
 dbHelper.setup(db)
 
+app.use(morgan("combined"))
+
+app.use("/atom", require("./routes/atom"))
 app.use("/", require("./routes/app"))
 app.use("/static", express.static("static"))
 
@@ -16,7 +22,7 @@ app.set("view engine", "ejs")
 app.set("db", db)
 
 if (process.env.NODE_ENV == "DEBUG") {
-// 	discord.archiveChannelMessages(db, process.env.DISCORD_TOKEN, process.env.DISCORD_CHANNEL_ID)
+	discord.archiveChannelMessages(db, process.env.DISCORD_TOKEN, process.env.DISCORD_CHANNEL_ID)
 
 
 
@@ -33,5 +39,5 @@ if (process.env.NODE_ENV == "DEBUG") {
 
 const port = process.env.PORT || 3000
 app.listen(port, () => {
-	console.log(`[discord-web-mirror] hosted on port ${port}`)
+	log("web server", "info", `hosted on port ${port}`)
 })
