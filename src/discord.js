@@ -7,6 +7,7 @@ const pipeline = util.promisify(stream.pipeline)
 const dbHelper = require("./db")
 const { DiscordError } = require("./error")
 const { log } = require("./log")
+const crypto = require("crypto")
 
 async function getChannelMessages(token, channelId) {
     const response = await axios(`https://discord.com/api/v9/channels/${channelId}/messages?limit=50`, {
@@ -24,15 +25,14 @@ async function getChannelMessages(token, channelId) {
 }
 exports.getChannelMessages = getChannelMessages
 
-async function saveMessageAttachment(rawUrl) {
+async function saveMessageAttachment(rawUrl, type = "attachments") {
 	const url = new URL(rawUrl)
+    const urlHash = crypto.createHash("md5").update(rawUrl).digest("hex")
 	const filename = url.pathname.split("/").at(-1)
-	const dirPath = path.join("static", url.pathname.split("/").slice(1, -1).join("/"))
+    const dirPath = path.join("static", type, urlHash)
 	const fullPath = path.join(dirPath, filename)
 	
 	if (fs.existsSync(fullPath)) {
-		// annoyingly verbose
-		// log("discord dl", "info", `${rawUrl} already downloaded, skipping`)
 		return
 	}
 	
@@ -69,6 +69,7 @@ async function archiveChannelMessages(db, discordToken, discordChannelId) {
 	
 	log("discord", "info", `downloading attachments from channel ${discordChannelId}`)
 	// download each attachment from each message
+	/*
 	const downloads = msgs.reduce((filtered, message) => {
 		if (message.attachments.length > 0)
 			filtered.push(...message.attachments.map(attachment => saveMessageAttachment(attachment.proxy_url)))
@@ -84,11 +85,40 @@ async function archiveChannelMessages(db, discordToken, discordChannelId) {
 		}
 		return filtered
 	}, [])
+	*/
+	
 	try {
-		await Promise.all(downloads)
+		for (const msg of msgs) {
+			if (msg.attachments.length > 0) {
+				for (const attachment of msg.attachments) {
+					await saveMessageAttachment(attachment.proxy_url, "attachments")
+				}
+			}
+			if ((msg.embeds?.length || 0) > 0) {
+				for (const embed of msg.embeds) {
+					if (embed.author?.proxy_icon_url)
+						await saveMessageAttachment(embed.author.proxy_icon_url, "external")
+					if (embed.image?.proxy_url)
+						await saveMessageAttachment(embed.image.proxy_url, "external")
+					if (embed.thumbnail?.proxy_url)
+						await saveMessageAttachment(embed.thumbnail.proxy_url, "external")
+				}
+			}
+		}
 	} catch (err) {
-		log("discord dl", "warn", `downloaded failed - ${err.response.status} ${err.config.method} ${err.config.url}`)
+		console.log(err)
 	}
+	
+	
+	
+// 	try {
+// 		await Promise.all(downloads)
+// 	} catch (err) {
+// 		if (err.response) {
+// 			log("discord dl", "warn", `download failed - ${err.response.status}`)
+// 		}
+// 		log("discord dl", "warn", `downloaded failed`)
+// 	}
 	
 	log("discord", "info", `downloaded all attachments from channel ${discordChannelId}`)
 }
