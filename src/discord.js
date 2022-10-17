@@ -9,6 +9,44 @@ const { DiscordError } = require("./error")
 const { log } = require("./log")
 const crypto = require("crypto")
 
+// should return the server name and url to guild picture
+async function getGuildMetadata(token, guildId) {
+    const response = await axios(`https://discord.com/api/v9/guilds/${guildId}`, {
+        headers: {
+            "authorization": token,
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+        }
+    })
+    if (response.status != 200) {
+        throw new Error(`Discord responded with status code ${response.status}`)
+    }
+    const guildIcon = `https://cdn.discordapp.com/icons/${guildId}/${response.data.icon}.jpeg`
+    return {
+        id: response.data.id,
+        name: response.data.name,
+        iconUrl: guildIcon
+    }
+}
+exports.getGuildMetadata = getGuildMetadata
+
+async function getChannelMetadata(token, channelId) {
+    const response = await axios(`https://discord.com/api/v9/channels/${channelId}`, {
+        headers: {
+            "authorization": token,
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
+        }
+    })
+    if (response.status != 200) {
+        throw new Error(`Discord responded with status code ${response.status}`)
+    }
+    return {
+        id: response.data.id,
+        name: response.data.name,
+        guildId: response.data.guild_id
+    }
+}
+exports.getChannelMetadata = getChannelMetadata
+
 async function getChannelMessages(token, channelId) {
     const response = await axios(`https://discord.com/api/v9/channels/${channelId}/messages?limit=50`, {
         headers: {
@@ -20,19 +58,19 @@ async function getChannelMessages(token, channelId) {
     if (response.status == 200) {
         return response.data
     } else {
-        throw new Error(`Discord responsed with status code ${response.status}`)
+        throw new Error(`Discord responded with status code ${response.status}`)
     }
 }
 exports.getChannelMessages = getChannelMessages
 
-async function saveMessageAttachment(rawUrl, type = "attachments") {
+async function saveMessageAttachment(rawUrl, type = "attachments", override = false) {
 	const url = new URL(rawUrl)
     const urlHash = crypto.createHash("md5").update(rawUrl).digest("hex")
 	const filename = url.pathname.split("/").at(-1)
     const dirPath = path.join("static", type, urlHash)
 	const fullPath = path.join(dirPath, filename)
 	
-	if (fs.existsSync(fullPath)) {
+	if (override == false && fs.existsSync(fullPath)) {
 		return
 	}
 	

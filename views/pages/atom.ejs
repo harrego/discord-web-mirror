@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title>discord-web-mirror</title>
-  <link href="http://localhost:3000/"/>
+  <title><%= metadata.name %> (<%= metadata.guild.name %>)</title>
+  <link href="<%= server.link %>"/>
   <updated>2022-10-07T20:29:23Z</updated>
   <author>
-    <name>discord-web-mirror</name>
+    <name>Discord Web Mirror</name>
   </author>
-  <id>urn:uuid:aedfc73a-be65-4f79-bf0e-1e5aefb4788b</id>
+  <id><%= metadata.id %></id>
+  <% if (metadata.guild.icon_url_local) { %>
+  <icon><%= metadata.guild.icon_url_local %></icon>
+  <% } %>
 
 <% for (post of posts) { %>
   <entry>

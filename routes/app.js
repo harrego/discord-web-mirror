@@ -9,10 +9,8 @@ const marked = require("marked")
 const dbHelper = require("../src/db")
 
 function generateUrl(config, url, type) {
-    console.log(`generate url, "${url}", "${type}"`)
     const urlHash = crypto.createHash("md5").update(url).digest("hex")
     const urlObj = new URL(url)
-    console.log(config)
     return config.server.url + `/static/${type}/${urlHash}/` + urlObj.pathname.split("/").at(-1)
 }
 
@@ -25,6 +23,38 @@ router.get("/:channel_id/feed", (req, res) => {
         res.sendStatus(404)
         return
     }
+
+    let channelMetadata
+    try {
+        channelMetadata = dbHelper.getChannelMetadata(db, channelId)
+    } catch (e) {
+        console.log(e)
+        res.sendStatus(404)
+        return
+    }
+    
+    let guildMetadata
+    try {
+        guildMetadata = dbHelper.getGuildMetadata(db, channelMetadata.guildId)
+    } catch (e) {
+        console.log(e)
+        res.sendStatus(404)
+        return
+    }
+
+    const server = {
+        link: `${config.server.url}/${req.params.channel_id}/feed` 
+    }
+
+    const metadata = {
+        id: channelMetadata.id,
+        name: channelMetadata.name,
+        guild: {
+            id: guildMetadata.id,
+            name: guildMetadata.name,
+            icon_url_local: generateUrl(config, guildMetadata.iconUrl, "metadata")
+        }
+    } 
 
     const posts = dbHelper.getDiscordMessages(db, channelId, 50)
 	posts.forEach(post => {
@@ -47,7 +77,7 @@ router.get("/:channel_id/feed", (req, res) => {
             }
         })
 	})
-	res.render("pages/atom.ejs", { posts: posts })
+	res.render("pages/atom.ejs", { server: server, metadata: metadata, posts: posts })
 })
 
 // router.get("/", (req, res) => {

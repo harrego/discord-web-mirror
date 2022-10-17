@@ -1,6 +1,19 @@
 const crypto = require("crypto")
 
 function setup(db) {
+    db.prepare(`CREATE TABLE IF NOT EXISTS guild_metadata (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        icon_url TEXT 
+    )`).run()
+
+    db.prepare(`CREATE TABLE IF NOT EXISTS channel_metadata (
+        id TEXT PRIMARY KEY,
+        guild_id TEXT NOT NULL,
+        name TEXT NOT NULL,
+        FOREIGN KEY(guild_id) REFERENCES guild_metadata(id)
+    )`).run()
+
     db.prepare(`CREATE TABLE IF NOT EXISTS messages (
         id TEXT PRIMARY KEY,
         type INT NOT NULL,
@@ -54,6 +67,44 @@ function setup(db) {
 	)`).run()
 }
 exports.setup = setup
+
+function insertGuildMetadata(db, id, name, iconUrl) {
+    db.prepare("UPDATE guild_metadata SET name=?, icon_url=? WHERE id=?").run(name, iconUrl, id)
+    db.prepare("INSERT or IGNORE INTO guild_metadata (id, name, icon_url) VALUES (?, ?, ?)").run(id, name, iconUrl)
+}
+exports.insertGuildMetadata = insertGuildMetadata
+
+function getGuildMetadata(db, id) {
+    const guild = db.prepare("SELECT * FROM guild_metadata WHERE id=?").get(id)
+    if (guild == null) {
+        throw new Error("No guild with that id")
+    }
+    return {
+        id: guild.id,
+        name: guild.name,
+        iconUrl: guild.icon_url
+    }
+}
+exports.getGuildMetadata = getGuildMetadata
+
+function insertChannelMetadata(db, id, guildId, name) {
+    db.prepare("UPDATE channel_metadata SET guild_id=?, name=? WHERE id=?").run(guildId, name, id)
+    db.prepare("INSERT or IGNORE INTO channel_metadata (id, guild_id, name) VALUES (?, ?, ?)").run(id, guildId, name)
+}
+exports.insertChannelMetadata = insertChannelMetadata
+
+function getChannelMetadata(db, id) {
+    const channel = db.prepare("SELECT * FROM channel_metadata WHERE id=?").get(id)
+    if (channel == null) {
+        throw new Error("No channel with that id")
+    }
+    return {
+        id: channel.id,
+        guildId: channel.guild_id,
+        name: channel.name,
+    }
+}
+exports.getChannelMetadata = getChannelMetadata
 
 function insertDiscordMessages(db, messages) {
     function epochTimestamp(dateString) {

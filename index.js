@@ -36,7 +36,21 @@ if (config.server.enabled) {
 	log("web server", "info", "web server disabled in config")
 }
 
-// archive channel messages
+// channel metadata and archive channel messages
+
+async function collectChannelMetadata(channels) {
+    var guildIds = []
+    for (const channelId of config.discord.channels) {
+        const channelMetadata = await discord.getChannelMetadata(config.discord.token, channelId)
+        if (!guildIds.includes(channelMetadata.guildId)) {
+            guildIds.push(channelMetadata.guildId)
+            const guildMetadata = await discord.getGuildMetadata(config.discord.token, channelMetadata.guildId)
+            dbHelper.insertGuildMetadata(db, guildMetadata.id, guildMetadata.name, guildMetadata.iconUrl)
+            await discord.saveMessageAttachment(guildMetadata.iconUrl, "metadata", true)
+        }
+        dbHelper.insertChannelMetadata(db, channelMetadata.id, channelMetadata.guildId, channelMetadata.name)
+    }
+}
 
 async function discordArchiveInterval(channelId) {
 	await discord.archiveChannelMessages(db, config.discord.token, channelId)
@@ -49,6 +63,9 @@ async function discordArchiveInterval(channelId) {
 	}, intervalSeconds * 1000)
 }
 
-for (const channelId of config.discord.channels) {
-	discordArchiveInterval(channelId)
-}
+collectChannelMetadata(config.discord.channels).then(_ => {
+    for (const channelId of config.discord.channels) {
+        discordArchiveInterval(channelId)
+    }
+})
+
