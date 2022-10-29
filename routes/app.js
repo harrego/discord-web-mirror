@@ -8,11 +8,27 @@ const marked = require("marked")
 
 const dbHelper = require("../src/db")
 
+
 function generateUrl(config, url, type) {
     const urlHash = crypto.createHash("md5").update(url).digest("hex")
     const urlObj = new URL(url)
     return config.server.url + `/static/${type}/${urlHash}/` + urlObj.pathname.split("/").at(-1)
 }
+
+router.use((req, res, next) => {
+	function prettify(callback) {
+		return function(err, html) {
+			res.send(html.replace(/^\s*\n/gm, ""))
+		}
+	}
+
+	res.oldRender = res.render
+	res.render = function(view, options, callback) {
+		res.oldRender(view, options, prettify(callback))
+	}
+
+	return next()
+})
 
 router.get("/channels", (req, res) => {
 	const db = req.app.get("db")
