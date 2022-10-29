@@ -14,7 +14,24 @@ function generateUrl(config, url, type) {
     return config.server.url + `/static/${type}/${urlHash}/` + urlObj.pathname.split("/").at(-1)
 }
 
-router.get("/:channel_id/feed", (req, res) => {
+router.get("/channels", (req, res) => {
+	const db = req.app.get("db")
+	const config = req.app.get("config")
+	
+	const channels = config.discord.channels.reduce((filtered, channelId) => {
+		const channel = dbHelper.getChannelMetadata(db, channelId)
+		if (channel != null) {
+			const guild = dbHelper.getGuildMetadata(db, channel.guildId)
+			channel.guild = guild
+			filtered.push(channel)
+		}
+		return filtered
+	}, [])
+	
+	res.render("pages/channels_list.ejs", { channels: channels, config: config })
+})
+
+router.get("/channels/:channel_id/feed", (req, res) => {
     const db = req.app.get("db")
     const config = req.app.get("config")
 

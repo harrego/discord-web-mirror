@@ -96,7 +96,7 @@ exports.insertChannelMetadata = insertChannelMetadata
 function getChannelMetadata(db, id) {
     const channel = db.prepare("SELECT * FROM channel_metadata WHERE id=?").get(id)
     if (channel == null) {
-        throw new Error("No channel with that id")
+        return null
     }
     return {
         id: channel.id,
@@ -105,6 +105,12 @@ function getChannelMetadata(db, id) {
     }
 }
 exports.getChannelMetadata = getChannelMetadata
+
+function channelExists(db, id) {
+	const query = db.prepare("SELECT id FROM channel_metadata WHERE id=?").get(id)
+	return query != null
+}
+exports.channelExists = channelExists
 
 function insertDiscordMessages(db, messages) {
     function epochTimestamp(dateString) {
