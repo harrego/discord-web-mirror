@@ -45,13 +45,16 @@ router.get("/channels", (req, res) => {
 			channel.guild = guild
 
             const recentMessageTimestamp = dbHelper.getRecentChannelMessage(db, channelId)?.timestamp
-            channel.lastUpdated = recentMessageTimestamp
             if (recentMessageTimestamp) {
+                channel.lastUpdated = recentMessageTimestamp
                 const date = new Date(recentMessageTimestamp * 1000)
                 var pm = date.getHours() > 12
                 var hours = date.getHours() % 12
                 const dateString = `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} at ${hours}:${String(date.getMinutes()).padStart(2, "0")} ${pm ? "pm" : "am"}`
                 channel.humanLastUpdated = dateString
+            } else {
+                channel.lastUpdated = 0
+                channel.humanLastUpdated = "No messages"
             }
 
 			filtered.push(channel)
