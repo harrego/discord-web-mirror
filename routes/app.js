@@ -5,6 +5,7 @@ const router = express.Router()
 
 const sanitizeHtml = require("sanitize-html")
 const marked = require("marked")
+const { htmlTrimBlankLines } = require("html-trim-blank-lines")
 
 const dbHelper = require("../src/db")
 
@@ -15,16 +16,17 @@ function generateUrl(config, url, type) {
     return config.server.url + `/static/${type}/${urlHash}/` + urlObj.pathname.split("/").at(-1)
 }
 
+// wrapper for html trim blank lines
 router.use((req, res, next) => {
-	function prettify(callback) {
+	function process(callback) {
 		return function(err, html) {
-			res.send(html.replace(/^\s*\n/gm, ""))
+			res.send(htmlTrimBlankLines(html))
 		}
 	}
 
 	res.oldRender = res.render
 	res.render = function(view, options, callback) {
-		res.oldRender(view, options, prettify(callback))
+		res.oldRender(view, options, process(callback))
 	}
 
 	return next()
