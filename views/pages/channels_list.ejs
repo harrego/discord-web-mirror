@@ -1,25 +1,70 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!--   <link rel="stylesheet" type="text/css" href="assets/style.css"> -->
-<!--   <link rel="icon" type="image/png" href="assets/favicon-16x16.png" sizes="16x16"> -->
-<!--   <link rel="icon" type="image/png" href="assets/favicon-32x32.png" sizes="32x32"> -->
-<!--   <link rel="icon" type="image/png" href="assets/favicon-96x96.png" sizes="96x96"> -->
-  <meta property="og:title" content="Channels List" />
-<!--   <meta property="og:description" content="" /> -->
-  <meta property="og:url" content="<%= config.server.url %>/channels" />
-  <title>Channels List</title>
-</head>
-<body>
-	<div class="content">
-		<p>Channels with RSS feeds:</p>
-		<ul>
-			<% for (const channel of channels) { %>
-			<li><a href="<%= config.server.url %>/channels/<%= channel.id %>/feed"><%= channel.name %> (<%= channel.guild.name %>)</a></li>
-			<% } %>
-		</ul>
-	</div>
-</body>
+<html lang="en">
+    <head>
+        <title>Discord Web Mirror</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <!--   <link rel="icon" type="image/png" href="assets/favicon-16x16.png" sizes="16x16"> -->
+      <!--   <link rel="icon" type="image/png" href="assets/favicon-32x32.png" sizes="32x32"> -->
+      <!--   <link rel="icon" type="image/png" href="assets/favicon-96x96.png" sizes="96x96"> -->
+        <meta property="og:title" content="Discord Web Mirror" />
+      <!--   <meta property="og:description" content="" /> -->
+        <meta property="og:url" content="<%= config.server.url %>/channels" />
+        <style>
+            body {
+                margin: 0;
+                font-family: serif;
+            }
+            .content {
+                margin: 0 auto;
+                max-width: 600px;
+            }
+
+            .channels-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .channels-table th {
+                text-align: left;
+            }
+            .channels-table tr:nth-child(1) {
+                background-color: darkgray;
+            }
+            .channels-table tr {
+                margin: 0;
+            }
+            .channels-table tr:nth-child(odd) td {
+                background-color: lightgray;
+            }
+
+            header h1 {
+                font-size: 18px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="content">
+            <header>
+                <h1>Discord Web Mirror</h1>
+                <p>Create RSS mirrors of Discord channels, complete with embed and attachment support <i><a href="https://github.com/harrego/discord-web-mirror">[github]</a></i></p>
+            </header>
+            <div class="description">
+                <p>This instance has <i><%= metadata.humanChannelsCount %></i> configured.</p>
+            </div>
+            <table class="channels-table">
+                <tr>
+                    <th>Channel (RSS)</th>
+                    <th>Server Name</th>
+                    <th>Last Updated &#8595;</th>
+                </tr>
+                <% for (const channel of channels) { %>
+                <tr>
+                    <td><a href="<%= config.server.url %>/channels/<%= channel.id %>/feed"><%= channel.name %></a></td>
+                    <td><%= channel.guild.name %></td>
+                    <td><%= channel.humanLastUpdated %></td>
+                </tr>
+                <% } %>
+            </table>
+        </div>
+    </body>
 </html>

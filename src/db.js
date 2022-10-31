@@ -112,6 +112,12 @@ function channelExists(db, id) {
 }
 exports.channelExists = channelExists
 
+function getRecentChannelMessage(db, channelId) {
+	const query = db.prepare("SELECT timestamp FROM messages WHERE channel_id=? ORDER BY timestamp DESC").get(channelId)
+	return query
+}
+exports.getRecentChannelMessage = getRecentChannelMessage
+
 function insertDiscordMessages(db, messages) {
     function epochTimestamp(dateString) {
         const date = new Date(dateString)

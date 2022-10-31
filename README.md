@@ -2,6 +2,10 @@
 
 Create RSS mirrors of Discord channels, complete with embed and attachment support.
 
+- Create an RSS mirror of a Discord channel
+- Attachments, embeds and metadata (excluding author data) all retained
+- Retroactively fetches past channel messages
+
 ## Why?
 
 `discord-web-mirror` was intended to mirror news-based Discord channels, a lot of community news is crowd-sourced and published in Discord channels.

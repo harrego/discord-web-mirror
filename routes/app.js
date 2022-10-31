@@ -32,6 +32,8 @@ router.use((req, res, next) => {
 	return next()
 })
 
+const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+
 router.get("/channels", (req, res) => {
 	const db = req.app.get("db")
 	const config = req.app.get("config")
@@ -41,12 +43,25 @@ router.get("/channels", (req, res) => {
 		if (channel != null) {
 			const guild = dbHelper.getGuildMetadata(db, channel.guildId)
 			channel.guild = guild
+
+            const recentMessageTimestamp = dbHelper.getRecentChannelMessage(db, channelId)?.timestamp
+            channel.lastUpdated = recentMessageTimestamp
+            if (recentMessageTimestamp) {
+                const date = new Date(recentMessageTimestamp * 1000)
+                var pm = date.getHours() > 12
+                var hours = date.getHours() % 12
+                const dateString = `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} at ${hours}:${String(date.getMinutes()).padStart(2, "0")} ${pm ? "pm" : "am"}`
+                channel.humanLastUpdated = dateString
+            }
+
 			filtered.push(channel)
 		}
 		return filtered
-	}, [])
+	}, []).sort((a, b) => b.lastUpdated - a.lastUpdated)
+
+    const channelsCount = `${channels.length} channel${channels.length == 0 || channels.length > 1 ? "s" : ""}`
 	
-	res.render("pages/channels_list.ejs", { channels: channels, config: config })
+	res.render("pages/channels_list.ejs", { channels: channels, config: config, metadata: { humanChannelsCount: channelsCount } })
 })
 
 router.get("/channels/:channel_id/feed", (req, res) => {
