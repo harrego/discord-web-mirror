@@ -24,7 +24,9 @@
 <% if (post.attachments) {
  for (attachment of post.attachments) { %>
     <% if (attachment.content_type.startsWith("image/")) { %>
-      <img src="<%= attachment.proxy_url_local %>"/>
+      <a href="<%= attachment.proxy_url_local %>"><img src="<%= attachment.proxy_url_local %>"/></a>
+    <% } else { %>
+      <p><a href="<%= attachment.proxy_url_local %>">[<%= attachment.filename %>]</a></p>
     <% } %>
 <% } %>
 <% } %>
@@ -49,7 +51,7 @@
       <% } %>
     <% } %>
     <% if (embed.thumbnail) { %>
-      <img src="<%= embed.thumbnail.proxy_url_local %>" />
+      <a href="<%= embed.thumbnail.proxy_url_local %>"><img src="<%= embed.thumbnail.proxy_url_local %>" /></a>
     <% } %>
   <% } %>
 <% } %>
