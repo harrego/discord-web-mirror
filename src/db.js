@@ -113,7 +113,11 @@ function channelExists(db, id) {
 exports.channelExists = channelExists
 
 function getRecentChannelMessage(db, channelId) {
-	const query = db.prepare("SELECT timestamp FROM messages WHERE channel_id=? ORDER BY timestamp DESC").get(channelId)
+	const query = db.prepare("SELECT id, timestamp, edited_timestamp FROM messages WHERE channel_id=? ORDER BY timestamp DESC, edited_timestamp DESC").get(channelId)
+	if (query?.edited_timestamp) {
+		query.editedTimestamp = query.edited_timestamp
+		delete query.edited_timestamp
+	}
 	return query
 }
 exports.getRecentChannelMessage = getRecentChannelMessage

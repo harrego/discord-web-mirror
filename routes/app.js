@@ -44,7 +44,8 @@ router.get("/channels", (req, res) => {
 			const guild = dbHelper.getGuildMetadata(db, channel.guildId)
 			channel.guild = guild
 
-            const recentMessageTimestamp = dbHelper.getRecentChannelMessage(db, channelId)?.timestamp
+            const recentMessage = dbHelper.getRecentChannelMessage(db, channelId)
+            const recentMessageTimestamp = recentMessage?.editedTimestamp || recentMessage?.timestamp
             if (recentMessageTimestamp) {
                 channel.lastUpdated = recentMessageTimestamp
                 const date = new Date(recentMessageTimestamp * 1000)
@@ -96,12 +97,17 @@ router.get("/channels/:channel_id/feed", (req, res) => {
     }
 
     const server = {
-        link: `${config.server.url}/${req.params.channel_id}/feed` 
+        link: `${config.server.url}/${channelId}/feed` 
     }
+
+    const recentMessage = dbHelper.getRecentChannelMessage(db, channelId)
+    const recentMessageTimestamp = recentMessage?.editedTimestamp || recentMessage?.timestamp
+    const lastUpdated = recentMessageTimestamp != null ? new Date(parseInt(recentMessageTimestamp) * 1000) : new Date()
 
     const metadata = {
         id: channelMetadata.id,
         name: channelMetadata.name,
+        last_updated_iso: lastUpdated.toISOString(),
         guild: {
             id: guildMetadata.id,
             name: guildMetadata.name,

@@ -107,23 +107,6 @@ async function archiveChannelMessages(db, discordToken, discordChannelId) {
 	
 	log("discord", "info", `downloading attachments from channel ${discordChannelId}`)
 	// download each attachment from each message
-	/*
-	const downloads = msgs.reduce((filtered, message) => {
-		if (message.attachments.length > 0)
-			filtered.push(...message.attachments.map(attachment => saveMessageAttachment(attachment.proxy_url)))
-		if (message.embeds.length > 0) {
-			filtered.push(...message.embeds.map(embed => {
-				if (embed.author?.proxy_icon_url)
-					filtered.push(saveMessageAttachment(embed.author.proxy_icon_url))
-				if (embed.image?.proxy_url)
-					filtered.push(saveMessageAttachment(embed.image.proxy_url))
-				if (embed.thumbnail?.proxy_url)
-					filtered.push(saveMessageAttachment(embed.thumbnail.proxy_url))
-			}))
-		}
-		return filtered
-	}, [])
-	*/
 	
 	try {
 		for (const msg of msgs) {
