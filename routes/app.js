@@ -115,7 +115,13 @@ router.get("/channels/:channel_id/feed", (req, res) => {
 		post.html_content = sanitizeHtml(marked.parse(post.content))
         post.iso_timestamp = new Date(post.timestamp * 1000).toISOString()
         post.attachments?.forEach(postAttachment => {
-            postAttachment.proxy_url_local = generateUrl(config, postAttachment.proxy_url, "attachments") 
+            var url = postAttachment.proxy_url
+            const sourceUrl = new URL(postAttachment.url)
+            // fixing a bug where the proxied version of some cdn attachments fail to GET
+            if (sourceUrl.hostname == "cdn.discordapp.com") {
+                url = postAttachment.url
+            }
+            postAttachment.resolved_url_local = generateUrl(config, url, "attachments")
         })
         post.embeds?.forEach(embed => {
             if (embed.description) {

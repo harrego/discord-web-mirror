@@ -129,7 +129,15 @@ async function archiveChannelMessages(db, discordToken, discordChannelId) {
 		for (const msg of msgs) {
 			if (msg.attachments.length > 0) {
 				for (const attachment of msg.attachments) {
-					await saveMessageAttachment(attachment.proxy_url, "attachments")
+					var url = attachment.proxy_url
+
+					const sourceUrl = new URL(attachment.url)
+					// fixing a bug where the proxied version of some cdn attachments fail to GET
+					if (sourceUrl.hostname == "cdn.discordapp.com") {
+						url = attachment.url
+					}
+
+					await saveMessageAttachment(url, "attachments")
 				}
 			}
 			if ((msg.embeds?.length || 0) > 0) {

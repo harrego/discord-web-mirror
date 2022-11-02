@@ -24,9 +24,9 @@
 <% if (post.attachments) {
  for (attachment of post.attachments) { %>
     <% if (attachment.content_type.startsWith("image/")) { %>
-      <a href="<%= attachment.proxy_url_local %>"><img src="<%= attachment.proxy_url_local %>"/></a>
+      <a href="<%= attachment.resolved_url_local %>"><img src="<%= attachment.resolved_url_local %>"/></a>
     <% } else { %>
-      <p><a href="<%= attachment.proxy_url_local %>">[<%= attachment.filename %>]</a></p>
+      <p><a href="<%= attachment.resolved_url_local %>">[<%= attachment.filename %>]</a></p>
     <% } %>
 <% } %>
 <% } %>
