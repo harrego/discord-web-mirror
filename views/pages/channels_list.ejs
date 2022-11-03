@@ -77,10 +77,12 @@
 
             const channels = <%- JSON.stringify(metadata.channelsLastUpdated) %>
             for (const channel of channels) {
-                const dateColumn = document.querySelector(`#tr-channel-${channel.id} .date-col`)
-                if (dateColumn) {
-                    const channelDate = new Date(channel.lastUpdated * 1000)
-                    dateColumn.innerHTML = customDateFormat(channelDate)
+                if (channel.lastUpdated) {
+                    const dateColumn = document.querySelector(`#tr-channel-${channel.id} .date-col`)
+                    if (dateColumn) {
+                        const channelDate = new Date(channel.lastUpdated * 1000)
+                        dateColumn.innerHTML = customDateFormat(channelDate)
+                    }
                 }
             }
         </script>
