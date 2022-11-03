@@ -16,6 +16,11 @@
                 font-family: "Verdana", sans-serif;
                 font-size: 12px;
             }
+            .version {
+                font-size: 10px;
+                text-align: center;
+                margin-top: 16px;
+            }
             .content {
                 margin: 0 auto;
                 max-width: 600px;
@@ -66,6 +71,8 @@
                 </tr>
                 <% } %>
             </table>
+            <!-- <hr/> -->
+            <p class="version"><%= metadata.app.name %> / <%= metadata.app.version %></p>
         </div>
         <script>
             const months = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]

@@ -72,7 +72,9 @@ router.get("/channels", (req, res) => {
     })
 
     const channelsCount = `${channels.length} channel${channels.length == 0 || channels.length > 1 ? "s" : ""}`
+   
     const metadata = {
+        app: config.app,
         humanChannelsCount: channelsCount,
         channelsLastUpdated: channelsLastUpdated
     }

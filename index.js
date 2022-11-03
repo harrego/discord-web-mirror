@@ -9,6 +9,10 @@ const discord = require("./src/discord")
 const { log } = require("./src/log")
 
 const config = configHelper.readConfig()
+config.app = {
+	name: "discord-web-mirror",
+	version: "v0.1.0"
+}
 
 const db = require("better-sqlite3")("discord-web-mirror.sqlite3")
 dbHelper.setup(db)
