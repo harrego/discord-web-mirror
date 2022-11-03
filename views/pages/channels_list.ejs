@@ -59,13 +59,31 @@
                     <th>Last Updated &#8595;</th>
                 </tr>
                 <% for (const channel of channels) { %>
-                <tr>
+                <tr id="tr-channel-<%= channel.id %>">
                     <td><a href="<%= config.server.url %>/channels/<%= channel.id %>/feed"><%= channel.name %></a></td>
                     <td><%= channel.guild.name %></td>
-                    <td><%= channel.humanLastUpdated %></td>
+                    <td class="date-col"><%= channel.humanLastUpdated %></td>
                 </tr>
                 <% } %>
             </table>
         </div>
+        <script>
+            const months = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
+            function customDateFormat(date) {
+                var pm = date.getHours() > 12
+                var hours = date.getHours() % 12
+                return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} at ${hours}:${String(date.getMinutes()).padStart(2, "0")} ${pm ? "pm" : "am"}`
+            }
+
+            const channels = <%- JSON.stringify(channels) %>
+            console.log(channels)
+            for (const channel of channels) {
+                const dateColumn = document.querySelector(`#tr-channel-${channel.id} .date-col`)
+                if (dateColumn) {
+                    const channelDate = new Date(channel.lastUpdated * 1000)
+                    dateColumn.innerHTML = customDateFormat(channelDate)
+                }
+            }
+        </script>
     </body>
 </html>

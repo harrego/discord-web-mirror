@@ -9,6 +9,12 @@ const { htmlTrimBlankLines } = require("html-trim-blank-lines")
 
 const dbHelper = require("../src/db")
 
+function customDateFormatGMT(date) {
+    const gmtDate = new Date(date.toLocaleString("en-US", { timeZone: "GMT" }))
+    var pm = gmtDate.getHours() > 12
+    var hours = gmtDate.getHours() % 12
+    return `${months[gmtDate.getMonth()]} ${gmtDate.getDate()}, ${gmtDate.getFullYear()} at ${hours}:${String(gmtDate.getMinutes()).padStart(2, "0")} ${pm ? "pm" : "am"} GMT`
+}
 
 function generateUrl(config, url, type) {
     const urlHash = crypto.createHash("md5").update(url).digest("hex")
@@ -32,7 +38,8 @@ router.use((req, res, next) => {
 	return next()
 })
 
-const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+// const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+const months = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
 
 router.get("/channels", (req, res) => {
 	const db = req.app.get("db")
@@ -48,10 +55,7 @@ router.get("/channels", (req, res) => {
             const recentMessageTimestamp = recentMessage?.editedTimestamp || recentMessage?.timestamp
             if (recentMessageTimestamp) {
                 channel.lastUpdated = recentMessageTimestamp
-                const date = new Date(recentMessageTimestamp * 1000)
-                var pm = date.getHours() > 12
-                var hours = date.getHours() % 12
-                const dateString = `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} at ${hours}:${String(date.getMinutes()).padStart(2, "0")} ${pm ? "pm" : "am"}`
+                const dateString = customDateFormatGMT(new Date(recentMessageTimestamp * 1000))
                 channel.humanLastUpdated = dateString
             } else {
                 channel.lastUpdated = 0
@@ -63,9 +67,12 @@ router.get("/channels", (req, res) => {
 		return filtered
 	}, []).sort((a, b) => b.lastUpdated - a.lastUpdated)
 
+    const metadata = {
+        humanChannelsCount: channelsCount
+    }
     const channelsCount = `${channels.length} channel${channels.length == 0 || channels.length > 1 ? "s" : ""}`
 	
-	res.render("pages/channels_list.ejs", { channels: channels, config: config, metadata: { humanChannelsCount: channelsCount } })
+	res.render("pages/channels_list.ejs", { channels: channels, config: config, metadata: metadata })
 })
 
 router.get("/channels/:channel_id/feed", (req, res) => {
