@@ -82,6 +82,13 @@ router.get("/channels", (req, res) => {
 	res.render("pages/channels_list.ejs", { channels: channels, config: config, metadata: metadata })
 })
 
+router.get("/channels/:channel_id", (req, res) => {
+    const db = req.app.get("db")
+    const config = req.app.get("config")
+
+    res.render("pages/channel.ejs")
+})
+
 router.get("/channels/:channel_id/feed", (req, res) => {
     const db = req.app.get("db")
     const config = req.app.get("config")
