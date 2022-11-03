@@ -67,10 +67,15 @@ router.get("/channels", (req, res) => {
 		return filtered
 	}, []).sort((a, b) => b.lastUpdated - a.lastUpdated)
 
-    const metadata = {
-        humanChannelsCount: channelsCount
-    }
+    const channelsLastUpdated = channels.map(channel => {
+        return { id: channel.id, lastUpdated: channel.lastUpdated }
+    })
+
     const channelsCount = `${channels.length} channel${channels.length == 0 || channels.length > 1 ? "s" : ""}`
+    const metadata = {
+        humanChannelsCount: channelsCount,
+        channelsLastUpdated: channelsLastUpdated
+    }
 	
 	res.render("pages/channels_list.ejs", { channels: channels, config: config, metadata: metadata })
 })

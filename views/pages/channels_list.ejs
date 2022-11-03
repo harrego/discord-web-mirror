@@ -75,8 +75,7 @@
                 return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()} at ${hours}:${String(date.getMinutes()).padStart(2, "0")} ${pm ? "pm" : "am"}`
             }
 
-            const channels = <%- JSON.stringify(channels) %>
-            console.log(channels)
+            const channels = <%- JSON.stringify(metadata.channelsLastUpdated) %>
             for (const channel of channels) {
                 const dateColumn = document.querySelector(`#tr-channel-${channel.id} .date-col`)
                 if (dateColumn) {
