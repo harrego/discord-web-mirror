@@ -22,21 +22,21 @@ function generateUrl(config, url, type) {
     return config.server.url + `/static/${type}/${urlHash}/` + urlObj.pathname.split("/").at(-1)
 }
 
-// wrapper for html trim blank lines
-router.use((req, res, next) => {
-	function process(callback) {
-		return function(err, html) {
-			res.send(htmlTrimBlankLines(html))
-		}
-	}
+// // wrapper for html trim blank lines
+// router.use((req, res, next) => {
+// 	function process(callback) {
+// 		return function(err, html) {
+// 			res.send(htmlTrimBlankLines(html))
+// 		}
+// 	}
 
-	res.oldRender = res.render
-	res.render = function(view, options, callback) {
-		res.oldRender(view, options, process(callback))
-	}
+// 	res.oldRender = res.render
+// 	res.render = function(view, options, callback) {
+// 		res.oldRender(view, options, process(callback))
+// 	}
 
-	return next()
-})
+// 	return next()
+// })
 
 // const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 const months = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
@@ -86,7 +86,33 @@ router.get("/channels/:channel_id", (req, res) => {
     const db = req.app.get("db")
     const config = req.app.get("config")
 
-    res.render("pages/channel.ejs")
+    const channelId = req.params.channel_id
+    if (!config.discord.channels.includes(channelId)) {
+        res.sendStatus(404)
+        return
+    }
+
+    let channelMetadata
+    try {
+        channelMetadata = dbHelper.getChannelMetadata(db, channelId)
+    } catch (e) {
+        console.log(e)
+        res.sendStatus(404)
+        return
+    }
+    
+    let guildMetadata
+    try {
+        guildMetadata = dbHelper.getGuildMetadata(db, channelMetadata.guildId)
+    } catch (e) {
+        console.log(e)
+        res.sendStatus(404)
+        return
+    }
+
+    const posts = dbHelper.getDiscordMessages(db, channelId, 50)
+
+    res.render("pages/channel.ejs", { posts: posts })
 })
 
 router.get("/channels/:channel_id/feed", (req, res) => {
