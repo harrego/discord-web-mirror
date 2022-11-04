@@ -59,13 +59,13 @@
             </div>
             <table class="channels-table">
                 <tr>
-                    <th>Channel (RSS)</th>
+                    <th>Channel</th>
                     <th>Server Name</th>
                     <th>Last Updated &#8595;</th>
                 </tr>
                 <% for (const channel of channels) { %>
                 <tr id="tr-channel-<%= channel.id %>">
-                    <td><a href="<%= config.server.url %>/channels/<%= channel.id %>/feed"><%= channel.name %></a></td>
+                    <td><a href="<%= config.server.url %>/channels/<%= channel.id %>"><%= channel.name %></a></td>
                     <td><%= channel.guild.name %></td>
                     <td class="date-col"><%= channel.humanLastUpdated %></td>
                 </tr>

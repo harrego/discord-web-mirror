@@ -22,7 +22,7 @@ function generateUrl(config, url, type) {
     return config.server.url + `/static/${type}/${urlHash}/` + urlObj.pathname.split("/").at(-1)
 }
 
-// // wrapper for html trim blank lines
+// wrapper for html trim blank lines
 // router.use((req, res, next) => {
 // 	function process(callback) {
 // 		return function(err, html) {
@@ -82,6 +82,40 @@ router.get("/channels", (req, res) => {
 	res.render("pages/channels_list.ejs", { channels: channels, config: config, metadata: metadata })
 })
 
+function fetchChannelPosts(db, config, channelId, postLimit) {
+    const posts = dbHelper.getDiscordMessages(db, channelId, postLimit)
+	posts.forEach(post => {
+        const basename = config.server.url + "/static"
+		post.html_content = sanitizeHtml(marked.parse(post.content))
+        post.iso_timestamp = new Date(post.timestamp * 1000).toISOString()
+        post.human_timestamp = customDateFormatGMT(new Date(post.timestamp * 1000))
+        post.edited = post.editedTimestamp != null
+        console.log(post)
+        post.attachments?.forEach(postAttachment => {
+            var url = postAttachment.proxy_url
+            const sourceUrl = new URL(postAttachment.url)
+            // fixing a bug where the proxied version of some cdn attachments fail to GET
+            if (sourceUrl.hostname == "cdn.discordapp.com") {
+                url = postAttachment.url
+            }
+            postAttachment.resolved_url_local = generateUrl(config, url, "attachments")
+        })
+        post.embeds?.forEach(embed => {
+            if (embed.description) {
+                embed.html_description = sanitizeHtml(marked.parse(embed.description))
+            }
+            embed.images?.forEach(embedImage => {
+                embedImage.proxy_url_local = generateUrl(config, embedImage.proxy_url, "external")
+            })
+
+            if (embed.thumbnail) {
+                embed.thumbnail.proxy_url_local = generateUrl(config, embed.thumbnail.proxy_url, "external")
+            }
+        })
+	})
+    return posts
+}
+
 router.get("/channels/:channel_id", (req, res) => {
     const db = req.app.get("db")
     const config = req.app.get("config")
@@ -110,9 +144,19 @@ router.get("/channels/:channel_id", (req, res) => {
         return
     }
 
-    const posts = dbHelper.getDiscordMessages(db, channelId, 50)
+    const posts = fetchChannelPosts(db, config, channelId, 50)
 
-    res.render("pages/channel.ejs", { posts: posts })
+    const metadata = {
+        id: channelMetadata.id,
+        name: channelMetadata.name,
+        guild: {
+            id: guildMetadata.id,
+            name: guildMetadata.name,
+            icon_url_local: generateUrl(config, guildMetadata.iconUrl, "metadata")
+        }
+    } 
+
+    res.render("pages/channel.ejs", { posts: posts, metadata: metadata })
 })
 
 router.get("/channels/:channel_id/feed", (req, res) => {
@@ -151,6 +195,8 @@ router.get("/channels/:channel_id/feed", (req, res) => {
     const recentMessageTimestamp = recentMessage?.editedTimestamp || recentMessage?.timestamp
     const lastUpdated = recentMessageTimestamp != null ? new Date(parseInt(recentMessageTimestamp) * 1000) : new Date()
 
+    const posts = fetchChannelPosts(db, config, channelId, 50)
+
     const metadata = {
         id: channelMetadata.id,
         name: channelMetadata.name,
@@ -162,33 +208,6 @@ router.get("/channels/:channel_id/feed", (req, res) => {
         }
     } 
 
-    const posts = dbHelper.getDiscordMessages(db, channelId, 50)
-	posts.forEach(post => {
-        const basename = config.server.url + "/static"
-		post.html_content = sanitizeHtml(marked.parse(post.content))
-        post.iso_timestamp = new Date(post.timestamp * 1000).toISOString()
-        post.attachments?.forEach(postAttachment => {
-            var url = postAttachment.proxy_url
-            const sourceUrl = new URL(postAttachment.url)
-            // fixing a bug where the proxied version of some cdn attachments fail to GET
-            if (sourceUrl.hostname == "cdn.discordapp.com") {
-                url = postAttachment.url
-            }
-            postAttachment.resolved_url_local = generateUrl(config, url, "attachments")
-        })
-        post.embeds?.forEach(embed => {
-            if (embed.description) {
-                embed.html_description = sanitizeHtml(marked.parse(embed.description))
-            }
-            embed.images?.forEach(embedImage => {
-                embedImage.proxy_url_local = generateUrl(config, embedImage.proxy_url, "external")
-            })
-
-            if (embed.thumbnail) {
-                embed.thumbnail.proxy_url_local = generateUrl(config, embed.thumbnail.proxy_url, "external")
-            }
-        })
-	})
 	res.render("pages/atom.ejs", { server: server, metadata: metadata, posts: posts })
 })
 

@@ -38,6 +38,11 @@
 
 	.message {
 		background-color: #f5f5f5;
+		margin-bottom: 20px;
+	}
+
+	img {
+		max-width: 200px;
 	}
 
 	.message-header {
@@ -72,12 +77,19 @@
 </head>
 <body>
 	<div class="content">
+		<header>
+			<h1>Discord Web Mirror</h1>
+			<p>Create RSS mirrors of Discord channels, complete with embed and attachment support <i><a href="https://github.com/harrego/discord-web-mirror">[github project]</a></i></p>
+		</header>
+		<div class="description">
+			<p>This instance has <i><%# metadata.humanChannelsCount %></i> configured. View the <a href="/channels">channels list</a>.</a></p>
+		</div>
 		<% for (post of posts) { %>
 		<div class="messages">
 			<div class="message">
 				<div class="message-header p-margin-0">
-					<p class="message-header-channel">#channel (Guild)</p>
-					<p>September 10, 2022 - 2:24 EST</p>
+					<p class="message-header-channel">#<%= metadata.name %> (<%= metadata.guild.name %>)</p>
+					<p class="message-header-date"><% if (post.edited) { %><i>(edited)</i><% } %><%= post.human_timestamp %></p>
 				</div>
 				<div class="message-content">
 					<p><%= post.content %></p>
@@ -86,36 +98,57 @@
 						<% for (const embed of post.embeds) { %>
 						<div class="embed">
 							<div class="embed-header-container">
+
 								<div class="embed-header p-margin-0">
 									<% if (embed.title) { %>
 									<% if (embed.url) { %>
 										<a href="<%= embed.url %>">
 									  <% } %>
 									<p class="embed-header-title"><%= embed.title %></p>
+									<% if (embed.url) { %>
+									</a>
+									  <% } %>
 									<% } %>
 								</div>
+
+								<% if (embed.author?.name) { %>
 								<div class="embed-author p-margin-0">
 									<!-- <img width="26" height="26" src="x.png"/> -->
-									<p><a href="#">example (@example)</a></p>
+									<p><%= embed.author?.name %></p>
 								</div>
-								<div class="embed-title p-margin-0">
+								<% } %>
+								<!-- <div class="embed-title p-margin-0">
 									<p><a href="#">Example - @example</a></p>
-								</div>
+								</div> -->
 							</div>
 							
+							<% if (embed.html_description) { %>
 							<div class="embed-content">
-								<p>example paragraph</p>
+								<%- embed.html_description %>
 							</div>
-							<div class="embed-images">
-								<img width="190" height="190" src="/static/external/0e6e19bdb785b12072e04d04b97f43a0/maxresdefault.jpg"/>
+							<% } %>
+
+							<% if (embed.images) { %>
+								<div class="embed-images">
+								
+									<% for (const embedImage of embed.images) { %>
+									  <img src="<%= embedImage.proxy_url_local %>" />
+									<% } %>
+
+								<!-- <img width="190" height="190" src="/static/external/0e6e19bdb785b12072e04d04b97f43a0/maxresdefault.jpg"/> -->
 								<!-- <img width="190" height="190" src="x.png"/> -->
 								<!-- <img width="190" height="190" src="x.png"/> -->
 								<!-- <img width="190" height="190" src="x.png"/> -->
-							</div>
+								</div>
+							<% } %>
+
+							<% if (embed.footer?.text) { %>
 							<div class="embed-footer p-margin-0">
 								<!-- <img width="20" height="20" src="x.png"/> -->
-								<p>Twitter • 01/01/01</p>
+								<p><%= embed.footer?.text %></p>
 							</div>
+							<% } %>
+
 						</div>
 						<% } %>
 					<% } %>
@@ -132,7 +165,6 @@
 				</div>
 			</div>
 		</div>
-		<hr/>
 		<% } %>
 	</div>
 </body>
