@@ -11,7 +11,7 @@ const { log } = require("./src/log")
 const config = configHelper.readConfig()
 config.app = {
 	name: "discord-web-mirror",
-	version: "v0.1.0"
+	version: "v0.2.0 beta"
 }
 
 const db = require("better-sqlite3")("discord-web-mirror.sqlite3")

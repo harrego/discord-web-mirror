@@ -73,16 +73,51 @@
 	.embed-header-title {
 		font-weight: bold;
 	}
+
+	header {
+		background-color: lightgray;
+		display: flex;
+		justify-content: space-between;
+	}
+	header p {
+		margin: 0;
+	}
+	header ul {
+		margin: 0;
+		padding: 0;
+		display: flex;
+	}
+	header ul li {
+		list-style: none;
+		margin: 0 6px;
+	}
+	header ul li:first-child {
+		margin-left: 0;
+	}
+	header ul li:last-child {
+		margin-right: 0;
+	}
   </style>
 </head>
 <body>
 	<div class="content">
-		<header>
+		<!-- <header>
 			<h1>Discord Web Mirror</h1>
 			<p>Create RSS mirrors of Discord channels, complete with embed and attachment support <i><a href="https://github.com/harrego/discord-web-mirror">[github project]</a></i></p>
+		</header> -->
+
+		<header>
+			<p><b>Discord Web Mirror</b></p>
+			<div class="links">
+				<ul>
+					<li><a href="https://github.com/harrego/discord-web-mirror">GitHub</a></li>
+					<li><a href="<%= config.server.url %>/channels">Channels</a></li>
+				</ul>
+			</div>
 		</header>
+
 		<div class="description">
-			<p>This instance has <i><%# metadata.humanChannelsCount %></i> configured. View the <a href="/channels">channels list</a>.</a></p>
+			<p>Web mirror of the Discord channel <i>#<%= metadata.name %></i> in <i><%= metadata.guild.name %></i>. <a href="<%= config.server.url %>/channels/<%= metadata.id %>/feed">[rss feed]</a></p>
 		</div>
 		<% for (post of posts) { %>
 		<div class="messages">
@@ -92,7 +127,7 @@
 					<p class="message-header-date"><% if (post.edited) { %><i>(edited)</i><% } %><%= post.human_timestamp %></p>
 				</div>
 				<div class="message-content">
-					<p><%= post.content %></p>
+					<p><%- post.html_content %></p>
 
 					<% if (post.embeds) { %>
 						<% for (const embed of post.embeds) { %>

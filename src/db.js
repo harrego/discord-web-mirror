@@ -203,9 +203,9 @@ function getDiscordMessages(db, channelId, count = 50, afterMessageId = undefine
 	
 	let rows = []
 	if (afterMessageId) {
-		rows = db.prepare("SELECT * FROM messages WHERE channel_id = ? AND id < ? ORDER BY id DESC LIMIT ?").all(channelId, afterMessageId, messageCount)
+		rows = db.prepare("SELECT * FROM messages WHERE channel_id = ? AND id < ? ORDER BY timestamp DESC LIMIT ?").all(channelId, afterMessageId, messageCount)
 	} else {
-		rows = db.prepare("SELECT * FROM messages WHERE channel_id = ? ORDER BY id DESC LIMIT ?").all(channelId, messageCount)
+		rows = db.prepare("SELECT * FROM messages WHERE channel_id = ? ORDER BY timestamp DESC LIMIT ?").all(channelId, messageCount)
 	}
 	
 	for (row of rows) {

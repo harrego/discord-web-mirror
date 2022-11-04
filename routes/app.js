@@ -23,20 +23,20 @@ function generateUrl(config, url, type) {
 }
 
 // wrapper for html trim blank lines
-// router.use((req, res, next) => {
-// 	function process(callback) {
-// 		return function(err, html) {
-// 			res.send(htmlTrimBlankLines(html))
-// 		}
-// 	}
+router.use((req, res, next) => {
+	function process(callback) {
+		return function(err, html) {
+			res.send(htmlTrimBlankLines(html))
+		}
+	}
 
-// 	res.oldRender = res.render
-// 	res.render = function(view, options, callback) {
-// 		res.oldRender(view, options, process(callback))
-// 	}
+	res.oldRender = res.render
+	res.render = function(view, options, callback) {
+		res.oldRender(view, options, process(callback))
+	}
 
-// 	return next()
-// })
+	return next()
+})
 
 // const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 const months = ["Jan", "Feb", "March", "April", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]
@@ -90,7 +90,6 @@ function fetchChannelPosts(db, config, channelId, postLimit) {
         post.iso_timestamp = new Date(post.timestamp * 1000).toISOString()
         post.human_timestamp = customDateFormatGMT(new Date(post.timestamp * 1000))
         post.edited = post.editedTimestamp != null
-        console.log(post)
         post.attachments?.forEach(postAttachment => {
             var url = postAttachment.proxy_url
             const sourceUrl = new URL(postAttachment.url)
@@ -156,7 +155,7 @@ router.get("/channels/:channel_id", (req, res) => {
         }
     } 
 
-    res.render("pages/channel.ejs", { posts: posts, metadata: metadata })
+    res.render("pages/channel.ejs", { posts: posts, metadata: metadata, config: config })
 })
 
 router.get("/channels/:channel_id/feed", (req, res) => {
@@ -208,14 +207,13 @@ router.get("/channels/:channel_id/feed", (req, res) => {
         }
     } 
 
+    res.setHeader("Content-Type", "text/xml; charset=utf-8")
 	res.render("pages/atom.ejs", { server: server, metadata: metadata, posts: posts })
 })
 
-// router.get("/", (req, res) => {
-// 	const db = req.app.get("db")
-	
-// 	const messages = dbHelper.getDiscordMessages(db, process.env.DISCORD_CHANNEL_ID, 20)
-// 	res.render("pages/messages", { messages: messages })
-// })
+router.get("/", (req, res) => {
+    const config = req.app.get("config")
+	res.redirect(`${config.server.url}/channels`)
+})
 
 module.exports = router
